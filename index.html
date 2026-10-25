@@ -317,24 +317,32 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 
 /* ================= 밸런스 설정: 플레이하며 이 값만 바꿔 조정합니다 ================= */
 const CONFIG = {
-  GOLD_RATE: 1,        // 모든 골드 획득량 배율
+  GOLD_RATE: .8,       // 모든 골드 획득량 배율
   GEM_RATE: 1,         // 보스/신기록 보석 배율
   MON_HP_G: 1.17,      // 층당 몬스터 체력 증가율
   MON_ATK_G: 1.13,     // 층당 몬스터 공격력 증가율
-  GOLD_G: 1.155,       // 층당 골드 증가율
+  GOLD_G: 1.186,       // 층당 골드 증가율 (기존 1.155에서 증가분 +20%)
+  MON_POWER: 1.2,      // 몬스터 체력·공격력 배율
+  DUN_REWARD_MULT: .5, // 던전 골드/보석 배율 보정
+  DEATH_BACK: 10,      // 전멸 시 후퇴하는 단계 수
+  CRIT_CAP: .45,       // 치명타 확률 최대
+  UP_MAX_LV: 200,      // 직업 강화 최대 레벨
+  UP_COST_MULT: 1.3,   // 직업/스킬 강화 비용 배율
+  UP_GROWTH: .6,       // 강화 상승치 배율 (기존의 60%)
+  SKILL_MAX_LV: 100,   // 스킬 최대 레벨
+  SKILL_MULT_MIN: 2,   // 필살기 피해 배율 Lv1 (200%)
+  SKILL_MULT_MAX: 5,   // 필살기 피해 배율 최대 레벨 (500%)
+  AURA_MAX: .2,        // 팀 버프 최대 레벨 파티 공격력 증가 (직업당 +20%)
   MON_HIT: 1.3,        // 몬스터 공격 간격(초)
-  PARTY_SCALE: 0.5,    // 파티원 1명당 공격력 배율 (4인 동시 공격 보정)
+  PARTY_SCALE: 0.9,    // 파티원 1명당 공격력 배율 (4인 동시 공격 보정)
   HERO_LV_COST: 25,    // 영웅 레벨업 기본 비용
   HERO_LV_G: 1.17,     // 영웅 레벨업 비용 증가율
-  HERO_LV_STAT: 0.1,   // 영웅 레벨당 능력치 증가율
+  HERO_LV_STAT: 0.11,   // 영웅 레벨당 능력치 증가율
   REVIVE_HP: 0.35,     // 처치 시 쓰러진 영웅 부활 체력 비율
   OFFLINE_CAP_H: 8,    // 방치 보상 최대 시간
   OFFLINE_RATE: .5,    // 방치 보상 효율
   SKILL_RESET_ON_SPAWN: true, // 새 몬스터가 나올 때마다 스킬 재사용 대기 초기화
   SKILL_CD: 12,        // 영웅 스킬 재사용(초)
-  SKILL_MULT: 8,       // 영웅 스킬 기본 피해 배율
-  SKILL_LV_BONUS: .4,  // 스킬 레벨당 피해 증가
-  AURA_PER_LV: .05,    // 팀 버프(스킬 B) 레벨당 파티 공격력 증가
   RELIC_BONUS: .08,    // 유물 1개당 공격력/체력 증가
   GEM_BOSS: 3,
   GEM_NEWFLOOR: 2,
@@ -444,15 +452,17 @@ const DUN = [
   { id: 'd5', name: '황금 사막 신전',  desc: '모래 골렘이 지키는 황금 신전. 거대한 황금 거신이 잠들어 있습니다.', diff: 1024, gold: 1300, gem: 6,   bg: 'bg5', row: 5, boss: 'm5_4', bname: '황금 거신',           glow: '#ffd24a' },
   { id: 'd6', name: '밤의 폐성',       desc: '모든 던전의 끝. 최후의 마왕이 어둠 속에서 기다립니다.',         diff: 4096, gold: 5200, gem: 8,   bg: 'bg0', row: 4, boss: 'finalboss', bname: '밤의 마왕',    glow: '#ff5a7a' }
 ];
+DUN.forEach((d) => { d.gold *= CONFIG.DUN_REWARD_MULT; d.gem *= CONFIG.DUN_REWARD_MULT; });
 const DID = {}; DUN.forEach((d, i) => { d.idx = i; DID[d.id] = d; });
 const RELICS = ['성터의 열쇠', '화산의 심장석', '숲 정령의 씨앗', '서리 왕관 조각', '수정 회랑의 눈', '황금 성배', '마왕의 왕관'];
 
 /* ================= 직업 강화 / 장비 ================= */
+const G_ = CONFIG.UP_GROWTH;
 const UP = {
-  atk:  { base: 10, g: 1.16, max: Infinity, val: (l) => 5 * Math.pow(1.1, l) * Math.pow(2, Math.floor(l / 25)),  f: fmt },
-  hp:   { base: 12, g: 1.15, max: Infinity, val: (l) => 50 * Math.pow(1.09, l) * Math.pow(2, Math.floor(l / 25)), f: fmt },
-  spd:  { base: 30, g: 1.22, max: 38,       val: (l) => Math.max(0.25, 1.2 * Math.pow(0.96, l)),               f: (v) => v.toFixed(2) + '초' },
-  crit: { base: 25, g: 1.25, max: 35,       val: (l) => Math.min(0.75, 0.05 + 0.02 * l),                      f: (v) => Math.round(v * 100) + '%' }
+  atk:  { base: 10, g: 1.16, max: CONFIG.UP_MAX_LV, val: (l) => 5 * Math.pow(Math.pow(1.1, l) * Math.pow(2, Math.floor(l / 25)), G_),  f: fmt },
+  hp:   { base: 12, g: 1.15, max: CONFIG.UP_MAX_LV, val: (l) => 50 * Math.pow(Math.pow(1.09, l) * Math.pow(2, Math.floor(l / 25)), G_), f: fmt },
+  spd:  { base: 30, g: 1.22, max: 38,               val: (l) => Math.max(0.25, 1.2 * Math.pow(0.96, l * G_)),                          f: (v) => v.toFixed(2) + '초' },
+  crit: { base: 25, g: 1.25, max: 35,               val: (l) => Math.min(CONFIG.CRIT_CAP, 0.05 + 0.02 * G_ * l),                      f: (v) => Math.round(v * 100) + '%' }
 };
 const UPK = ['atk', 'hp', 'spd', 'crit'];
 const SLOTS = ['weapon', 'armor', 'acc'];
@@ -482,6 +492,7 @@ function itemIcon(it) {
 }
 
 /* ================= 상태 ================= */
+const UPK_ = ['atk', 'hp', 'spd', 'crit'];
 function freshLv() { return { atk: 0, hp: 0, spd: 0, crit: 0 }; }
 function fresh() {
   const dun = {}; DUN.forEach((d) => { dun[d.id] = { stage: 1, max: 1 }; });
@@ -504,6 +515,7 @@ function normalize(o) {
   const s = Object.assign(f, o);
   s.lv = Object.assign({}, o.lv || {}); s.sk = Object.assign({}, o.sk || {});
   CLSKEYS.forEach((k) => { s.lv[k] = Object.assign(freshLv(), s.lv[k]); s.sk[k] = Object.assign({ a: 1, b: 0 }, s.sk[k]); });
+  CLSKEYS.forEach((k) => { s.sk[k].a = Math.min(CONFIG.SKILL_MAX_LV, s.sk[k].a); s.sk[k].b = Math.min(CONFIG.SKILL_MAX_LV, s.sk[k].b); UPK_.forEach((u) => { s.lv[k][u] = Math.min(UP[u].max, s.lv[k][u]); }); });
   s.dun = Object.assign({}, fd, o.dun || {});
   DUN.forEach((d) => { s.dun[d.id] = Object.assign({ stage: 1, max: 1 }, s.dun[d.id]); });
   s.owned = o.owned && Object.keys(o.owned).length ? o.owned : f.owned;
@@ -562,7 +574,7 @@ function equipBonus(cid) {
 }
 function aura() {
   const seen = {}; let a = 0;
-  for (const cid of party()) { const k = CH[cid].cls; if (!seen[k]) { seen[k] = 1; a += CONFIG.AURA_PER_LV * S.sk[k].b; } }
+  for (const cid of party()) { const k = CH[cid].cls; if (!seen[k]) { seen[k] = 1; a += CONFIG.AURA_MAX * S.sk[k].b / CONFIG.SKILL_MAX_LV; } }
   return 1 + a;
 }
 function statsFor(cid, lvOverride) {
@@ -573,7 +585,7 @@ function statsFor(cid, lvOverride) {
   const atk = UP.atk.val(lv.atk) * c.atk * m * (1 + eb.atk) * aura() * CONFIG.PARTY_SCALE;
   const hp = UP.hp.val(lv.hp) * c.hp * m * (1 + eb.hp);
   const spd = Math.max(0.2, UP.spd.val(lv.spd) * c.spd * (1 - eb.spd));
-  const crit = Math.min(0.85, UP.crit.val(lv.crit) + c.crit + eb.crit);
+  const crit = Math.min(CONFIG.CRIT_CAP, UP.crit.val(lv.crit) + c.crit + eb.crit);
   const goldm = (1 + eb.gold);
   const dps = atk * (1 + crit) / spd;
   const r = { atk, hp, spd, crit, goldm, dps, eb, power: Math.sqrt(dps * hp) };
@@ -588,10 +600,10 @@ function teamStats() {
 function upVal(cls, k, l) {
   const lv = Object.assign({}, S.lv[cls]); lv[k] = l;
   const c = CLS[cls], m = 1;
-  return k === 'atk' ? UP.atk.val(l) * c.atk * m : k === 'hp' ? UP.hp.val(l) * c.hp : k === 'spd' ? Math.max(0.2, UP.spd.val(l) * c.spd) : Math.min(0.85, UP.crit.val(l) + c.crit);
+  return k === 'atk' ? UP.atk.val(l) * c.atk * m : k === 'hp' ? UP.hp.val(l) * c.hp : k === 'spd' ? Math.max(0.2, UP.spd.val(l) * c.spd) : Math.min(CONFIG.CRIT_CAP, UP.crit.val(l) + c.crit);
 }
-const costAt = (k, l) => Math.ceil(UP[k].base * Math.pow(UP[k].g, l));
-function bulkCost(k, l, n) { const u = UP[k]; return Math.ceil(u.base * Math.pow(u.g, l) * (Math.pow(u.g, n) - 1) / (u.g - 1)); }
+const costAt = (k, l) => Math.ceil(CONFIG.UP_COST_MULT * UP[k].base * Math.pow(UP[k].g, l));
+function bulkCost(k, l, n) { const u = UP[k]; return Math.ceil(CONFIG.UP_COST_MULT * u.base * Math.pow(u.g, l) * (Math.pow(u.g, n) - 1) / (u.g - 1)); }
 function affordableUp(k, l) {
   const u = UP[k]; let n = 0, total = 0;
   while (n < 500 && l + n < u.max) { const c = costAt(k, l + n); if (total + c > S.gold) break; total += c; n++; }
@@ -600,19 +612,21 @@ function affordableUp(k, l) {
 const heroCostAt = (cid, l) => Math.ceil(CONFIG.HERO_LV_COST * Math.pow(CONFIG.HERO_LV_G, l - 1) * (1 + CH[cid].rar * 0.5));
 function heroBulk(cid, l, n) { let t = 0; for (let i = 0; i < n; i++) t += heroCostAt(cid, l + i); return t; }
 function heroAfford(cid, l) { let n = 0, t = 0; while (n < 300) { const c = heroCostAt(cid, l + n); if (t + c > S.gold) break; t += c; n++; } return n; }
-const skCost = (which, l) => Math.ceil(which === 'a' ? 80 * Math.pow(1.3, l - 1) : 120 * Math.pow(1.32, l));
-const skMult = (cls) => CONFIG.SKILL_MULT * (1 + CONFIG.SKILL_LV_BONUS * (S.sk[cls].a - 1));
+const skCost = (which, l) => Math.ceil(CONFIG.UP_COST_MULT * (which === 'a' ? 80 * Math.pow(1.3, l - 1) : 120 * Math.pow(1.32, l)));
+const skMultAt = (lv) => CONFIG.SKILL_MULT_MIN + (CONFIG.SKILL_MULT_MAX - CONFIG.SKILL_MULT_MIN) * (Math.min(lv, CONFIG.SKILL_MAX_LV) - 1) / (CONFIG.SKILL_MAX_LV - 1);
+const skMult = (cls) => skMultAt(S.sk[cls].a);
 
 const D = () => DID[S.cur];
 const isBoss = (st) => st % 5 === 0;
 const perStage = (st) => (isBoss(st) ? 1 : 5);
+const safe = (x) => (isFinite(x) ? Math.min(x, 1e300) : 1e300);
 function monStats(d, st) {
   const boss = isBoss(st);
   return {
     boss,
-    hp: 20 * Math.pow(CONFIG.MON_HP_G, st - 1) * d.diff * (boss ? 6 : 1),
-    atk: 4 * Math.pow(CONFIG.MON_ATK_G, st - 1) * Math.pow(d.diff, 0.9) * (boss ? 1.8 : 1),
-    gold: 5 * Math.pow(CONFIG.GOLD_G, st - 1) * d.gold * (boss ? 5 : 1) * CONFIG.GOLD_RATE * teamStats().goldm
+    hp: safe(20 * Math.pow(CONFIG.MON_HP_G, st - 1) * d.diff * (boss ? 6 : 1) * CONFIG.MON_POWER),
+    atk: safe(4 * Math.pow(CONFIG.MON_ATK_G, st - 1) * Math.pow(d.diff, 0.9) * (boss ? 1.8 : 1) * CONFIG.MON_POWER),
+    gold: safe(5 * Math.pow(CONFIG.GOLD_G, st - 1) * d.gold * (boss ? 5 : 1) * CONFIG.GOLD_RATE * teamStats().goldm)
   };
 }
 const monPower = (d, st) => { const m = monStats(d, st); return Math.sqrt(m.hp * m.atk / CONFIG.MON_HIT) * 0.6; };
@@ -692,10 +706,10 @@ function kill() {
   }
 }
 function retreat() {
-  const ds = dcur(); ds.stage = Math.max(1, ds.stage - 1);
+  const ds = dcur(); ds.stage = Math.max(1, ds.stage - CONFIG.DEATH_BACK);
   stageKills = 0; spawnT = 0.8; mon = null;
   for (const cid of party()) { const h = hr(cid); h.dead = false; h.hp = statsFor(cid).hp; }
-  say('전멸해 ' + ds.stage + '단계로 후퇴했다.');
+  say('전멸해 ' + ds.stage + '단계로 ' + CONFIG.DEATH_BACK + '단계 후퇴했다.'); toast('전멸! ' + ds.stage + '단계로 후퇴');
 }
 function tick(dt) {
   const ps = party(); if (!ps.length) return;
@@ -1077,10 +1091,10 @@ function paneSkill() {
   const pa = skPlan('a', sk.a), pb = skPlan('b', sk.b), ca = pa.cost, cb = pb.cost, hc = party().find((x) => CH[x].cls === k);
   let h = '<div class="sub"><span class="t">구매 수량</span>' + qtySeg() + '</div><div class="seg">' + CLSKEYS.map((x) => '<button type="button" data-sc="' + x + '" aria-pressed="' + (x === k) + '">' + CLS[x].name + '</button>').join('') + '</div>' +
     '<div class="note" style="margin:0">' + (inP ? '파티에 ' + c.name + ' 영웅이 있습니다.' : '현재 파티에 ' + c.name + ' 영웅이 없습니다. 강화는 같은 직업의 모든 캐릭터가 공유합니다.') + '</div>' +
-    '<div class="row">' + uimg('sk' + c.row + '_0', 'ic') + '<h3>' + c.skill[0] + '<span class="lv">Lv.' + sk.a + '</span></h3><p>필살기 피해 <span class="num">' + Math.round(skMult(k) * 100) + '%</span> → 다음 <span class="num">' + Math.round(skMult(k) / (1 + CONFIG.SKILL_LV_BONUS * (sk.a - 1)) * (1 + CONFIG.SKILL_LV_BONUS * sk.a) * 100) + '%</span>' + (hc ? ' · 실제 <span class="num">' + fmt(statsFor(hc).atk * skMult(k)) + '</span>' : '') + ' · 재사용 ' + CONFIG.SKILL_CD + '초</p>' +
-    '<button class="lvbtn gold" data-sk="a" data-cost="' + ca + '" type="button">강화' + (pa.n > 1 ? ' x' + pa.n : '') + '<small>' + goldImg() + fmt(ca) + '</small></button></div>' +
-    '<div class="row">' + uimg('sk' + c.row + '_1', 'ic') + '<h3>' + c.skill[1] + '<span class="lv">Lv.' + sk.b + '</span></h3><p>파티 전체 공격력 <span class="num">+' + (sk.b * CONFIG.AURA_PER_LV * 100).toFixed(1) + '%</span> (파티에 있는 동안 적용)</p>' +
-    '<button class="lvbtn gold" data-sk="b" data-cost="' + cb + '" type="button">강화' + (pb.n > 1 ? ' x' + pb.n : '') + '<small>' + goldImg() + fmt(cb) + '</small></button></div>' +
+    '<div class="row">' + uimg('sk' + c.row + '_0', 'ic') + '<h3>' + c.skill[0] + '<span class="lv">Lv.' + sk.a + '/' + CONFIG.SKILL_MAX_LV + '</span></h3><p>필살기 피해 <span class="num">' + Math.round(skMult(k) * 100) + '%</span>' + (sk.a < CONFIG.SKILL_MAX_LV ? ' → 다음 <span class="num">' + Math.round(skMultAt(sk.a + 1) * 100) + '%</span>' : ' (최대)') + (hc ? ' · 실제 <span class="num">' + fmt(statsFor(hc).atk * skMult(k)) + '</span>' : '') + ' · 재사용 ' + CONFIG.SKILL_CD + '초</p>' +
+    (pa.maxed ? '<button class="lvbtn" disabled type="button">최대</button>' : '<button class="lvbtn gold" data-sk="a" data-cost="' + ca + '" type="button">강화' + (pa.n > 1 ? ' x' + pa.n : '') + '<small>' + goldImg() + fmt(ca) + '</small></button>') + '</div>' +
+    '<div class="row">' + uimg('sk' + c.row + '_1', 'ic') + '<h3>' + c.skill[1] + '<span class="lv">Lv.' + sk.b + '/' + CONFIG.SKILL_MAX_LV + '</span></h3><p>파티 전체 공격력 <span class="num">+' + (sk.b * CONFIG.AURA_MAX / CONFIG.SKILL_MAX_LV * 100).toFixed(1) + '%</span> (최대 +' + Math.round(CONFIG.AURA_MAX * 100) + '%) (파티에 있는 동안 적용)</p>' +
+    (pb.maxed ? '<button class="lvbtn" disabled type="button">최대</button>' : '<button class="lvbtn gold" data-sk="b" data-cost="' + cb + '" type="button">강화' + (pb.n > 1 ? ' x' + pb.n : '') + '<small>' + goldImg() + fmt(cb) + '</small></button>') + '</div>' +
     '<div class="sub"><span class="t">' + c.name + ' 직업 강화</span>' + qtySeg() + '</div>';
   for (const u of UPK) {
     const U = UP[u], l = S.lv[k][u], room = U.max - l;
@@ -1163,13 +1177,15 @@ function buyUp(cls, k, n) {
   save(false); renderPane();
 }
 function skPlan(which, l) {
-  let n = 0, t = 0; const want = qty === 'max' ? 300 : +qty;
+  const room = CONFIG.SKILL_MAX_LV - l;
+  if (room <= 0) return { n: 0, cost: 0, maxed: true };
+  let n = 0, t = 0; const want = Math.min(room, qty === 'max' ? 300 : +qty);
   if (qty === 'max') { while (n < want) { const c = skCost(which, l + n); if (t + c > S.gold) break; t += c; n++; } if (!n) { n = 1; t = skCost(which, l); } }
   else { for (; n < want; n++) t += skCost(which, l + n); }
-  return { n, cost: t };
+  return { n, cost: t, maxed: false };
 }
 function buySk(cls, which) {
-  const l = S.sk[cls][which], pl = skPlan(which, l); if (S.gold < pl.cost) return;
+  const l = S.sk[cls][which], pl = skPlan(which, l); if (pl.maxed || S.gold < pl.cost) return;
   S.gold -= pl.cost; S.sk[cls][which] += pl.n; inval(); save(false); renderPane();
 }
 function enterDungeon(id) {
