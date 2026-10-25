@@ -347,6 +347,7 @@ const CONFIG = {
   RATES_E: [50, 33, 14, 3]
 };
 const SAVE_KEY = 'ashen-dungeon-v3';
+let bcasts = [];
 
 const SUF = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
 function fmt(n) {
@@ -895,7 +896,7 @@ const QUESTS = [
 const questGold = () => Math.max(500, Math.floor(estGps() * 600));
 const MAILS = [{ id: 'w', t: '출정을 환영합니다', b: '잿빛 던전의 모험가가 된 것을 환영합니다. 작은 선물을 드립니다.', r: { gems: 300 } }];
 const qClaimable = () => QUESTS.some((q) => S.qp[q.id] >= q.n && !S.qc[q.id]);
-const mailClaimable = () => MAILS.some((m) => !S.mail[m.id]);
+const mailClaimable = () => MAILS.some((m) => !S.mail[m.id]) || bcasts.some((x) => !S.mail['b' + x.id]);
 const dayClaimable = () => S.dclaim !== today();
 let lastRef = '';
 function refresh() {
@@ -1246,9 +1247,14 @@ function giveReward(r) {
   if (r.gems) { S.gems += r.gems; parts_.push('보석 ' + r.gems); }
   if (r.tickets) { S.tickets += r.tickets; parts_.push('티켓 ' + r.tickets); }
   if (r.gold) { const g = questGold(); S.gold += g; parts_.push('골드 ' + fmt(g)); }
+  if (r.goldAmt) { S.gold += r.goldAmt; parts_.push('골드 ' + fmt(r.goldAmt)); }
   return parts_.join(' · ');
 }
-const rwText = (r) => (r.gems ? '보석 ' + r.gems : r.tickets ? '티켓 ' + r.tickets : '골드 ' + fmt(questGold()));
+const rwText = (r) => [r.gems ? '보석 ' + r.gems : '', r.tickets ? '티켓 ' + r.tickets : '', r.gold ? '골드 ' + fmt(questGold()) : '', r.goldAmt ? '골드 ' + fmt(r.goldAmt) : ''].filter(Boolean).join(' · ');
+async function loadBcasts() {
+  if (!sb || !sbUser) return;
+  try { const { data } = await sb.from('broadcasts').select('*').order('created_at', { ascending: false }).limit(20); bcasts = data || []; } catch (e) { /* 무시 */ }
+}
 function openRewards() {
   const dc = dayClaimable();
   openModal('<h2>보상</h2><div class="row"><img class="ic" alt="" src="' + uiURL('i_gem') + '"><h3>출석 보상</h3><p>매일 한 번 받을 수 있습니다. 보석 ' + CONFIG.DAILY_GEMS + '</p><button class="lvbtn" data-day="1" type="button"' + (dc ? '' : ' disabled') + '>' + (dc ? '받기' : '완료') + '</button></div>' +
@@ -1264,13 +1270,15 @@ function openRewards() {
       if (q && S.qp[q.id] >= q.n && !S.qc[q.id]) { S.qc[q.id] = 1; toast('보상: ' + giveReward(q.r)); save(true); openRewards(); }
     });
 }
-function openMail() {
-  openModal('<h2>우편함</h2>' + MAILS.map((m) => '<div class="row"><img class="ic" alt="" src="' + uiURL('i_mail') + '"><h3>' + m.t + '</h3><p>' + m.b + ' (' + rwText(m.r) + ')</p><button class="lvbtn" data-m="' + m.id + '" type="button"' + (S.mail[m.id] ? ' disabled' : '') + '>' + (S.mail[m.id] ? '수령함' : '받기') + '</button></div>').join('') +
+async function openMail() {
+  await loadBcasts();
+  const list = MAILS.concat(bcasts.map((x) => ({ id: 'b' + x.id, t: x.title, b: x.body || '', r: { gems: x.gems || 0, tickets: x.tickets || 0, goldAmt: +x.gold || 0 } })));
+  openModal('<h2>우편함</h2>' + list.map((m) => '<div class="row"><img class="ic" alt="" src="' + uiURL('i_mail') + '"><h3>' + m.t + '</h3><p>' + m.b + ' (' + rwText(m.r) + ')</p><button class="lvbtn" data-m="' + m.id + '" type="button"' + (S.mail[m.id] ? ' disabled' : '') + '>' + (S.mail[m.id] ? '수령함' : '받기') + '</button></div>').join('') +
     '<div class="ctrl"><button class="btn ghost" data-close="1" type="button">닫기</button></div>',
     (e) => {
       const b = e.target.closest('[data-m]'); if (!b) return;
-      const m = MAILS.find((x) => x.id === b.dataset.m);
-      if (m && !S.mail[m.id]) { S.mail[m.id] = 1; toast('보상: ' + giveReward(m.r)); save(true); openMail(); }
+      const m = list.find((x) => x.id === b.dataset.m);
+      if (m && !S.mail[m.id]) { S.mail[m.id] = 1; toast('보상: ' + giveReward(m.r)); save(true); refresh(); openMail(); }
     });
 }
 function openShop() {
@@ -1296,10 +1304,24 @@ function openDev() {
   const fields = [['gold', '골드'], ['gems', '보석'], ['tickets', '티켓'], ['souls', '영혼']];
   openModal('<h2>개발자 도구</h2><div class="note" style="margin:0">수량을 입력하고 지급을 누르세요. 음수는 차감, 1e9 같은 표기도 가능합니다.</div>' +
     fields.map((f) => '<div class="setrow"><b>' + f[1] + ' <span class="num" style="color:var(--dim)">' + fmt(S[f[0]]) + '</span></b><span class="ctrl"><input class="devin" id="dv-' + f[0] + '" inputmode="decimal" placeholder="수량" style="width:110px;background:#0c111b;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono)"><button class="btn" data-give="' + f[0] + '" type="button">지급</button></span></div>').join('') +
+    (sb && sbUser ? '<div class="note" style="margin:6px 0 0"><b>전체 보상 발송</b> (모든 유저 우편함에 도착)</div>' +
+      '<input id="bc-t" placeholder="제목 (예: 점검 보상)" style="background:#0c111b;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 8px">' +
+      '<input id="bc-b" placeholder="내용 (선택)" style="background:#0c111b;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 8px">' +
+      '<div class="ctrl">' + [['bc-g', '보석'], ['bc-k', '티켓'], ['bc-o', '골드']].map((f) => '<input id="' + f[0] + '" inputmode="decimal" placeholder="' + f[1] + '" style="width:30%;background:#0c111b;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 8px;font-family:var(--mono)">').join('') + '</div>' +
+      '<button class="btn" data-bcsend="1" type="button">전체 발송</button>' : '') +
     '<div class="setrow"><b>캐릭터 전체 지급</b><button class="btn" data-dev="chars" type="button">지급</button></div>' +
     '<div class="setrow"><b>던전 전체 해금 (10단계)</b><button class="btn" data-dev="dun" type="button">해금</button></div>' +
     '<div class="ctrl"><button class="btn ghost" data-close="1" type="button">닫기</button></div>',
     (e) => {
+      if (e.target.closest('[data-bcsend]')) {
+        const t = $('#bc-t').value.trim(), g = Math.max(0, Math.floor(parseFloat($('#bc-g').value) || 0)), k = Math.max(0, Math.floor(parseFloat($('#bc-k').value) || 0)), o = Math.max(0, parseFloat($('#bc-o').value) || 0);
+        if (!t || (!g && !k && !o)) { toast('제목과 보상을 입력하세요.'); return; }
+        sb.from('broadcasts').insert({ title: t, body: $('#bc-b').value.trim(), gems: g, tickets: k, gold: o }).then((r) => {
+          if (r.error) { toast('발송 실패: ' + r.error.message); return; }
+          toast('전체 발송 완료'); loadBcasts().then(refresh);
+        });
+        return;
+      }
       const g = e.target.closest('[data-give]');
       if (g) {
         const k = g.dataset.give, v = parseFloat($('#dv-' + k).value);
@@ -1427,7 +1449,7 @@ async function attachAccount(user) {
     }
     remoteState = 'ok'; await saveRemote();
   } catch (e) { remoteState = 'err'; }
-  renderAcct(); renderPane(); refresh();
+  await loadBcasts(); renderAcct(); renderPane(); refresh();
 }
 const authMsg = (m) => ({ 'Invalid login credentials': '이메일 또는 비밀번호가 틀렸습니다.', 'User already registered': '이미 가입된 이메일입니다.', 'Email not confirmed': '이메일 인증이 필요합니다. 메일함을 확인하세요.' }[m] || (/least 6/.test(m) ? '비밀번호는 6자 이상이어야 합니다.' : /valid email|invalid/i.test(m) ? '이메일 형식을 확인하세요.' : m));
 function openAuth(msg) {
@@ -1463,6 +1485,7 @@ async function logout() {
   } catch (e) { remoteState = 'err'; renderAcct(); }
 })();
 
+setInterval(() => { if (sbUser) loadBcasts().then(() => { if (!inTitle) refresh(); }); }, 60000);
 let prev = performance.now(), uiT = 0, saveT = 0, winT = 0, paneT = 0;
 function frame(now) {
   let dt = (now - prev) / 1000; prev = now;
