@@ -18,7 +18,7 @@
   --hp: #d9625a;
   --soul: #9aa3e6;
   --ok: #6fd08c;
-  --r0: #8a93a8; --r1: #5aa2ff; --r2: #b57bff; --r3: #ffb938;
+  --r0: #8a93a8; --r1: #5aa2ff; --r2: #b57bff; --r3: #ffb938; --r4: #ff4d6d;
   --display: 'Black Han Sans', 'Noto Sans KR', sans-serif;
   --body: 'Noto Sans KR', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
@@ -152,8 +152,8 @@ section[hidden], [hidden] { display: none !important; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip { font-size: .7rem; padding: 1px 7px; border: 1px solid var(--line); border-radius: 4px; color: var(--dim); }
 .chip.r0 { border-color: var(--r0); color: var(--r0); } .chip.r1 { border-color: var(--r1); color: var(--r1); }
-.chip.r2 { border-color: var(--r2); color: var(--r2); } .chip.r3 { border-color: var(--r3); color: var(--r3); }
-.c0 { color: var(--r0); } .c1 { color: var(--r1); } .c2 { color: var(--r2); } .c3 { color: var(--r3); }
+.chip.r4 { border-color: var(--r4); color: var(--r4); } .chip.r2 { border-color: var(--r2); color: var(--r2); } .chip.r3 { border-color: var(--r3); color: var(--r3); }
+.c0 { color: var(--r0); } .c1 { color: var(--r1); } .c2 { color: var(--r2); } .c3 { color: var(--r3); } .c4 { color: var(--r4); }
 
 /* 카드 그리드 */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 7px; }
@@ -161,11 +161,11 @@ section[hidden], [hidden] { display: none !important; }
 .card img { height: 66px; width: auto; max-width: 100%; object-fit: contain; image-rendering: pixelated; }
 .card .nm { font-size: .72rem; line-height: 1.2; overflow-wrap: anywhere; }
 .card .st { font-family: var(--mono); font-size: .66rem; color: var(--gold); min-height: 1em; }
-.card.r1 { border-color: var(--r1); } .card.r2 { border-color: var(--r2); } .card.r3 { border-color: var(--r3); box-shadow: 0 0 10px -3px var(--r3); }
+.card.r1 { border-color: var(--r1); } .card.r2 { border-color: var(--r2); } .card.r3 { border-color: var(--r3); box-shadow: 0 0 10px -3px var(--r3); } .card.r4 { border-color: var(--r4); box-shadow: 0 0 12px -2px var(--r4); }
 .card.sel { outline: 2px solid var(--gold); outline-offset: 1px; }
 .card.off img { filter: brightness(0) opacity(.5); } .card.off .nm { color: var(--dim); }
 .badge { position: absolute; top: 3px; left: 3px; font-family: var(--mono); font-size: .58rem; padding: 0 4px; border-radius: 3px; background: #0c111b; }
-.badge.r0 { color: var(--r0); } .badge.r1 { color: var(--r1); } .badge.r2 { color: var(--r2); } .badge.r3 { color: var(--r3); }
+.badge.r0 { color: var(--r0); } .badge.r1 { color: var(--r1); } .badge.r2 { color: var(--r2); } .badge.r3 { color: var(--r3); } .badge.r4 { color: var(--r4); }
 .partyslots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .pslot { background: var(--raise); border: 1px dashed var(--line); border-radius: 8px; min-height: 84px; padding: 4px; display: grid; justify-items: center; align-content: center; font-size: .7rem; color: var(--dim); text-align: center; }
 .pslot img { height: 52px; width: auto; max-width: 100%; object-fit: contain; image-rendering: pixelated; }
@@ -175,7 +175,7 @@ section[hidden], [hidden] { display: none !important; }
 .slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .slot { background: var(--raise); border: 1px dashed var(--line); border-radius: 8px; padding: 6px 4px; min-height: 92px; display: grid; gap: 2px; align-content: center; justify-items: center; text-align: center; font-size: .7rem; color: var(--dim); }
 .slot img { width: 34px; height: 34px; object-fit: contain; }
-.slot.r0 { border: 1px solid var(--r0); } .slot.r1 { border: 1px solid var(--r1); } .slot.r2 { border: 1px solid var(--r2); } .slot.r3 { border: 1px solid var(--r3); }
+.slot.r0 { border: 1px solid var(--r0); } .slot.r1 { border: 1px solid var(--r1); } .slot.r2 { border: 1px solid var(--r2); } .slot.r3 { border: 1px solid var(--r3); } .slot.r4 { border: 1px solid var(--r4); }
 .slot b { color: var(--fg); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; font-size: .7rem; }
 .slot em { font-style: normal; color: var(--gold); font-family: var(--mono); }
 .ilist { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
@@ -263,7 +263,9 @@ section[hidden], [hidden] { display: none !important; }
 .pcard .nm { font-size: .72rem; line-height: 1.2; position: relative; z-index: 1; } .pcard .st { font-family: var(--mono); font-size: .66rem; color: var(--gold); position: relative; z-index: 1; }
 .pcard.ssr { border-color: #ffd24a; box-shadow: 0 0 16px 2px rgba(255, 190, 60, .6); background: linear-gradient(#4a3210, #1d1208); }
 .pcard.ssr::before { content: ''; position: absolute; inset: -40%; background: conic-gradient(from 0deg, transparent, rgba(255, 220, 120, .45), transparent 20%, rgba(255, 220, 120, .45), transparent 45%, rgba(255, 220, 120, .45), transparent 70%, rgba(255, 220, 120, .45), transparent); animation: spin 3s linear infinite; }
-.pcard.sr { border-color: #b57bff; box-shadow: 0 0 10px rgba(181, 123, 255, .45); }
+.pcard.ur { border-color: #ff4d6d; box-shadow: 0 0 18px 3px rgba(255, 77, 109, .65); background: linear-gradient(#4a1022, #1d0810); }
+.pcard.sr { border-color: #ffb938; box-shadow: 0 0 10px rgba(255, 185, 56, .45); }
+.pcard.sr0 { border-color: #b57bff; box-shadow: 0 0 10px rgba(181, 123, 255, .45); }
 @keyframes pflip { from { opacity: 0; transform: perspective(400px) rotateY(90deg) scale(.6); } to { opacity: 1; transform: perspective(400px) rotateY(0) scale(1); } }
 .pcard .badge { z-index: 2; }
 .pbanner { background: linear-gradient(135deg, #3a0f1e, #150a14 65%); border: 1px solid #7a3a58; border-radius: 10px; padding: 12px; display: grid; gap: 10px; }
@@ -381,7 +383,7 @@ const CONFIG = {
   START_TICKETS: 2,
   COST_C1: 100, COST_C10: 900, COST_E1: 80, COST_E10: 720,
   PITY_C: 40, PITY_E: 50,
-  RATES_C: [0, 70, 25, 5],
+  RATES_C: [0, 63, 36, 1],
   RATES_E: [50, 33, 14, 3]
 };
 const SAVE_KEY = 'ashen-dungeon-v3';
@@ -396,8 +398,8 @@ function fmt(n) {
   const v = n / Math.pow(1000, e);
   return (v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v.toFixed(2)) + SUF[e];
 }
-const RN = ['N', 'R', 'SR', 'SSR'];
-const RNAME = ['일반', '레어', '에픽', '전설'];
+const RN = ['N', 'R', 'SR', 'SSR', 'UR'];
+const RNAME = ['일반', '레어', '에픽', '전설', '신화'];
 
 /* ================= 이미지 ================= */
 const POS = {"c0r0s0": [0, 0, 132, 87], "c0r0s1": [136, 0, 103, 104], "c0r1s0": [243, 0, 87, 95], "c0r1s1": [334, 0, 114, 98], "c0r2s0": [452, 0, 112, 100], "c0r2s1": [568, 0, 117, 100], "c0r3s0": [689, 0, 113, 100], "c0r3s1": [806, 0, 121, 101], "c0r4s0": [931, 0, 122, 101], "c0r4s1": [1057, 0, 126, 101], "c0r5s0": [1187, 0, 124, 101], "c0r5s1": [0, 108, 110, 99], "c1r0s0": [114, 108, 108, 99], "c1r0s1": [226, 108, 94, 109], "c1r1s0": [324, 108, 139, 96], "c1r1s1": [467, 108, 136, 99], "c1r2s0": [607, 108, 120, 101], "c1r2s1": [731, 108, 112, 99], "c1r3s0": [847, 108, 131, 101], "c1r3s1": [982, 108, 121, 101], "c1r4s0": [1107, 108, 89, 101], "c1r4s1": [1200, 108, 120, 101], "c1r5s0": [0, 221, 115, 101], "c1r5s1": [119, 221, 103, 101], "c2r0s0": [226, 221, 132, 106], "c2r0s1": [362, 221, 101, 104], "c2r1s0": [467, 221, 108, 101], "c2r1s1": [579, 221, 103, 97], "c2r2s0": [686, 221, 108, 101], "c2r2s1": [798, 221, 95, 95], "c2r3s0": [897, 221, 97, 97], "c2r3s1": [998, 221, 107, 98], "c2r4s0": [1109, 221, 133, 101], "c2r4s1": [1246, 221, 111, 97], "c2r5s0": [0, 331, 111, 101], "c2r5s1": [115, 331, 92, 97], "c3r0s0": [211, 331, 92, 91], "c3r0s1": [307, 331, 99, 94], "c3r1s0": [410, 331, 77, 98], "c3r1s1": [491, 331, 99, 95], "c3r2s0": [594, 331, 90, 95], "c3r2s1": [688, 331, 86, 100], "c3r3s0": [778, 331, 95, 97], "c3r3s1": [877, 331, 115, 94], "c3r4s0": [996, 331, 90, 101], "c3r4s1": [1090, 331, 77, 98], "c3r5s0": [1171, 331, 115, 101], "c3r5s1": [0, 436, 126, 96], "base_archer": [130, 436, 94, 104], "base_knight": [228, 436, 109, 104], "base_mage": [341, 436, 81, 104], "pm000": [0, 532, 91, 100], "pm001": [95, 532, 96, 100], "pm002": [195, 532, 100, 100], "pm003": [299, 532, 99, 100], "pm004": [402, 532, 82, 100], "pm005": [488, 532, 82, 100], "pm006": [574, 532, 91, 100], "pm007": [669, 532, 83, 100], "pm008": [756, 532, 74, 100], "pm009": [834, 532, 93, 100], "pm010": [931, 532, 96, 100], "pm011": [1031, 532, 99, 100], "pm012": [1134, 532, 93, 100], "pm013": [1231, 532, 76, 100], "pm014": [1311, 532, 71, 100], "pm015": [0, 636, 69, 100], "pm016": [73, 636, 84, 100], "pm017": [161, 636, 89, 100], "pm018": [254, 636, 83, 100], "pm019": [341, 636, 83, 100], "pm020": [428, 636, 74, 100], "pm021": [506, 636, 67, 100], "pm022": [577, 636, 74, 100], "pm023": [655, 636, 70, 100], "pm024": [729, 636, 84, 100], "pm025": [817, 636, 89, 100], "pm026": [910, 636, 86, 100], "pm027": [1000, 636, 83, 100], "pm028": [1087, 636, 88, 100], "pm029": [1179, 636, 85, 100], "pm030": [1268, 636, 92, 100], "pm031": [0, 740, 98, 100], "pm032": [102, 740, 93, 100], "pm033": [199, 740, 88, 100], "pm034": [291, 740, 87, 100], "pm035": [382, 740, 90, 100], "pm036": [476, 740, 103, 100], "pm037": [583, 740, 126, 100], "pm038": [713, 740, 112, 100], "pm039": [829, 740, 107, 100], "pm040": [940, 740, 97, 100], "pm041": [1041, 740, 96, 100], "pm042": [1141, 740, 94, 100], "pm043": [1239, 740, 104, 100], "pm044": [0, 844, 86, 100], "pm045": [90, 844, 104, 100], "pm046": [198, 844, 94, 100], "pm047": [296, 844, 90, 100], "pm048": [390, 844, 88, 100], "pm049": [482, 844, 86, 100], "pm050": [572, 844, 95, 100], "pm051": [671, 844, 93, 100], "pm052": [768, 844, 84, 100], "pm053": [856, 844, 121, 100], "pm054": [981, 844, 88, 100], "pm055": [1073, 844, 85, 100], "pm056": [1162, 844, 80, 100], "pm057": [1246, 844, 88, 100], "pm058": [0, 948, 85, 100], "pm059": [89, 948, 88, 100], "pm060": [181, 948, 88, 100], "pm061": [273, 948, 86, 100], "pm062": [363, 948, 96, 100], "pm063": [463, 948, 79, 100], "pm064": [546, 948, 85, 100], "pm065": [635, 948, 92, 100], "pm066": [731, 948, 86, 100], "pm067": [821, 948, 88, 100], "pm068": [913, 948, 84, 100], "pm069": [1001, 948, 118, 100], "pm070": [1123, 948, 111, 100], "pm071": [1238, 948, 102, 100], "pm072": [0, 1052, 93, 100], "pm073": [97, 1052, 101, 100], "pm074": [202, 1052, 100, 100], "pm075": [306, 1052, 100, 100], "pm076": [410, 1052, 115, 100], "pm077": [529, 1052, 105, 100], "pm078": [638, 1052, 108, 100], "pm079": [750, 1052, 94, 100], "pm080": [848, 1052, 99, 100], "pm081": [951, 1052, 93, 100], "pm082": [1048, 1052, 100, 100], "pm083": [1152, 1052, 97, 100], "pm084": [1253, 1052, 106, 100], "pm085": [0, 1156, 100, 100], "pm086": [104, 1156, 100, 100], "pm087": [208, 1156, 90, 100], "pm088": [302, 1156, 97, 100], "pm089": [403, 1156, 101, 100], "pm090": [508, 1156, 97, 100], "pm091": [609, 1156, 96, 100], "pm092": [709, 1156, 103, 100], "pm093": [816, 1156, 103, 100], "pm094": [923, 1156, 110, 100], "pm095": [1037, 1156, 106, 100], "pm096": [1147, 1156, 93, 100], "pm097": [1244, 1156, 91, 100], "pm098": [0, 1260, 100, 100], "pm099": [104, 1260, 97, 100]};      // 영웅 도트 아틀라스
@@ -441,7 +443,7 @@ const CLS = {
 };
 const CLSKEYS = ['archer', 'warrior', 'mage', 'special'];
 const CLSIC = { archer: 'cls_archer', warrior: 'cls_warrior', mage: 'cls_mage', special: 'cls_special' };
-const RMULT = [1, 1.25, 1.8, 2.8];
+const RMULT = [1, 1.25, 1.8, 2.8, 4.2];
 const CH = {}, CHL = [];
 (function () {
   const L = [
@@ -504,10 +506,10 @@ const CH = {}, CHL = [];
     ['pm029', '어쌔신', 'special', 2, '#ffa84a'],
     ['pm030', '도적', 'special', 2, '#ffa84a'],
     ['pm031', '결투가', 'special', 2, '#ffa84a'],
-    ['pm032', '격투 장인', 'special', 2, '#ffa84a'],
-    ['pm033', '거리의 투사', 'special', 2, '#ffa84a'],
-    ['pm034', '건슬링어', 'special', 2, '#ffa84a'],
-    ['pm035', '악마 사냥꾼', 'special', 2, '#ffa84a'],
+    ['pm032', '격투 장인', 'special', 3, '#ffa84a'],
+    ['pm033', '거리의 투사', 'special', 3, '#ffa84a'],
+    ['pm034', '건슬링어', 'special', 3, '#ffa84a'],
+    ['pm035', '악마 사냥꾼', 'special', 3, '#ffa84a'],
     ['pm036', '헌터', 'archer', 2, '#7ec850'],
     ['pm037', '트래퍼', 'archer', 2, '#7ec850'],
     ['pm038', '비스트 테이머', 'archer', 2, '#7ec850'],
@@ -540,38 +542,38 @@ const CH = {}, CHL = [];
     ['pm065', '바람의 정령사', 'mage', 3, '#62b4ff'],
     ['pm066', '암흑 마법사', 'mage', 3, '#62b4ff'],
     ['pm067', '궁극 원소술사', 'mage', 3, '#62b4ff'],
-    ['pm068', '쌍둥이 소환사', 'special', 3, '#ffa84a'],
-    ['pm069', '환술사', 'special', 3, '#ffa84a'],
-    ['pm070', '섀도', 'special', 3, '#ffa84a'],
-    ['pm071', '팬텀', 'special', 3, '#ffa84a'],
-    ['pm072', '블러드 나이트', 'special', 3, '#ffa84a'],
-    ['pm073', '소울 리퍼', 'special', 3, '#ffa84a'],
-    ['pm074', '블레이드 댄서', 'special', 3, '#ffa84a'],
-    ['pm075', '아케인 워리어', 'special', 3, '#ffa84a'],
-    ['pm076', '드래곤 슬레이어', 'warrior', 3, '#ff6a4a'],
-    ['pm077', '천상의 전사', 'mage', 3, '#62b4ff'],
-    ['pm078', '공허의 군주', 'archer', 3, '#7ec850'],
-    ['pm079', '이터널', 'special', 3, '#ffa84a'],
-    ['pm080', '시간의 군주', 'warrior', 3, '#ff6a4a'],
-    ['pm081', '우주 해적', 'mage', 3, '#62b4ff'],
-    ['pm082', '암흑 황제', 'archer', 3, '#7ec850'],
-    ['pm083', '전쟁의 신', 'special', 3, '#ffa84a'],
-    ['pm084', '고대 전사', 'warrior', 3, '#ff6a4a'],
-    ['pm085', '고대 마법사', 'mage', 3, '#62b4ff'],
-    ['pm086', '고대 궁수', 'archer', 3, '#7ec850'],
-    ['pm087', '고대 사제', 'special', 3, '#ffa84a'],
-    ['pm088', '드래곤 로드', 'warrior', 3, '#ff6a4a'],
-    ['pm089', '타이탄', 'mage', 3, '#62b4ff'],
-    ['pm090', '피닉스', 'archer', 3, '#7ec850'],
-    ['pm091', '그랜드 마스터', 'special', 3, '#ffa84a'],
-    ['pm092', '공허의 지배자', 'warrior', 3, '#ff6a4a'],
-    ['pm093', '폭풍의 군주', 'mage', 3, '#62b4ff'],
-    ['pm094', '광휘의 존재', 'archer', 3, '#7ec850'],
-    ['pm095', '그림자 황제', 'special', 3, '#ffa84a'],
-    ['pm096', '별빛 수호자', 'warrior', 3, '#ff6a4a'],
-    ['pm097', '세계 파괴자', 'mage', 3, '#62b4ff'],
-    ['pm098', '멸망의 사도', 'archer', 3, '#7ec850'],
-    ['pm099', '인피니티', 'special', 3, '#ffa84a']
+    ['pm068', '쌍둥이 소환사', 'special', 4, '#ffa84a'],
+    ['pm069', '환술사', 'special', 4, '#ffa84a'],
+    ['pm070', '섀도', 'special', 4, '#ffa84a'],
+    ['pm071', '팬텀', 'special', 4, '#ffa84a'],
+    ['pm072', '블러드 나이트', 'special', 4, '#ffa84a'],
+    ['pm073', '소울 리퍼', 'special', 4, '#ffa84a'],
+    ['pm074', '블레이드 댄서', 'special', 4, '#ffa84a'],
+    ['pm075', '아케인 워리어', 'special', 4, '#ffa84a'],
+    ['pm076', '드래곤 슬레이어', 'warrior', 4, '#ff6a4a'],
+    ['pm077', '천상의 전사', 'mage', 4, '#62b4ff'],
+    ['pm078', '공허의 군주', 'archer', 4, '#7ec850'],
+    ['pm079', '이터널', 'special', 4, '#ffa84a'],
+    ['pm080', '시간의 군주', 'warrior', 4, '#ff6a4a'],
+    ['pm081', '우주 해적', 'mage', 4, '#62b4ff'],
+    ['pm082', '암흑 황제', 'archer', 4, '#7ec850'],
+    ['pm083', '전쟁의 신', 'special', 4, '#ffa84a'],
+    ['pm084', '고대 전사', 'warrior', 4, '#ff6a4a'],
+    ['pm085', '고대 마법사', 'mage', 4, '#62b4ff'],
+    ['pm086', '고대 궁수', 'archer', 4, '#7ec850'],
+    ['pm087', '고대 사제', 'special', 4, '#ffa84a'],
+    ['pm088', '드래곤 로드', 'warrior', 4, '#ff6a4a'],
+    ['pm089', '타이탄', 'mage', 4, '#62b4ff'],
+    ['pm090', '피닉스', 'archer', 4, '#7ec850'],
+    ['pm091', '그랜드 마스터', 'special', 4, '#ffa84a'],
+    ['pm092', '공허의 지배자', 'warrior', 4, '#ff6a4a'],
+    ['pm093', '폭풍의 군주', 'mage', 4, '#62b4ff'],
+    ['pm094', '광휘의 존재', 'archer', 4, '#7ec850'],
+    ['pm095', '그림자 황제', 'special', 4, '#ffa84a'],
+    ['pm096', '별빛 수호자', 'warrior', 4, '#ff6a4a'],
+    ['pm097', '세계 파괴자', 'mage', 4, '#62b4ff'],
+    ['pm098', '멸망의 사도', 'archer', 4, '#7ec850'],
+    ['pm099', '인피니티', 'special', 4, '#ffa84a']
   ];
   for (const [key, name, cls, rar, fx] of L) { CH[key] = { key, name, cls, rar, fx }; CHL.push(CH[key]); }
   for (const [key, name, cls, rar, fx] of PL) { CH[key] = { key, name, cls, rar, fx, prem: true }; CHL.push(CH[key]); }
@@ -1395,7 +1397,7 @@ function openGacha(kind) {
 
 
 /* ================= 프리미엄 소환 (루비: 서버가 관리) ================= */
-const PREM = { c1: 30, c10: 270, sr: 80, ssr: 20, pity: 30 };
+const PREM = { c1: 30, c10: 270, sr: 20, ssr: 70, ur: 10, pity: 30 };
 async function loadWallet() {
   if (!sb || !sbUser) return;
   try {
@@ -1411,8 +1413,8 @@ function openPremium() {
   const left = Math.max(0, PREM.pity - wallet.pity);
   openModal('<h2>루비 소환</h2><div class="pbanner"><div class="gimg"><img alt="" src="' + RUBY + '"></div>' +
     '<div class="ruby-line"><img alt="" src="' + RUBY + '">보유 루비 ' + fmt(wallet.rubies) + '</div>' +
-    '<div class="rates"><div class="c2">SR 에픽 <span>' + PREM.sr + '%</span></div><div class="c3">SSR 전설 <span>' + PREM.ssr + '%</span></div></div>' +
-    '<div class="note" style="margin:0">일반 소환보다 훨씬 강한 <b>에픽 이상 캐릭터만</b> 나옵니다. 전설 확정까지 ' + left + '회, 10회 소환은 전설 1명 보장. 이미 가진 캐릭터는 별이 오르고(최대 5) 5성 이후엔 루비 5개로 돌려받습니다.</div>' +
+    '<div class="rates"><div class="c2">SR 에픽 <span>' + PREM.sr + '%</span></div><div class="c3">SSR 전설 <span>' + PREM.ssr + '%</span></div><div class="c4">UR 신화 <span>' + PREM.ur + '%</span></div></div>' +
+    '<div class="note" style="margin:0">일반 소환보다 훨씬 강한 <b>유료 전용 캐릭터만</b> 나옵니다. UR 확정까지 ' + left + '회, 10회 소환은 SSR 이상 1명 보장. 이미 가진 캐릭터는 별이 오르고(최대 5) 5성 이후엔 루비 5개로 돌려받습니다.</div>' +
     '<div class="pulls"><button class="btn ruby big" data-pp="1" type="button"' + (wallet.rubies < PREM.c1 ? ' disabled' : '') + '>1회 소환<small>루비 ' + PREM.c1 + '</small></button>' +
     '<button class="btn ruby big" data-pp="10" type="button"' + (wallet.rubies < PREM.c10 ? ' disabled' : '') + '>10회 소환<small>루비 ' + PREM.c10 + '</small></button></div>' +
     '<div class="note" style="margin:0">루비는 서버가 관리해서 브라우저에서 고칠 수 없습니다. 루비는 현재 개발자 지급으로만 얻을 수 있습니다.</div></div>' +
@@ -1445,7 +1447,7 @@ function showResult(p) {
   const res = p.data.results, n = p.n;
   openModal('<h2>루비 소환 결과</h2><div class="pres">' + res.map((x, i) => {
     const c = CH[x.key], note = x.note === 'NEW' ? 'NEW' : x.note === 'STAR' ? '★' + x.star : '루비 +5';
-    return '<div class="pcard ' + (x.rar === 3 ? 'ssr' : 'sr') + '" style="--i:' + i + '"><span class="badge r' + x.rar + '">' + RN[x.rar] + '</span>' + img(x.key) + '<span class="nm">' + c.name + '</span><span class="st">' + note + '</span></div>';
+    return '<div class="pcard ' + (x.rar === 4 ? 'ssr ur' : x.rar === 3 ? 'sr' : 'sr0') + '" style="--i:' + i + '"><span class="badge r' + x.rar + '">' + RN[x.rar] + '</span>' + img(x.key) + '<span class="nm">' + c.name + '</span><span class="st">' + note + '</span></div>';
   }).join('') + '</div><div class="ruby-line"><img alt="" src="' + RUBY + '">남은 루비 ' + fmt(wallet.rubies) + '</div>' +
     '<div class="ctrl"><button class="btn ruby" data-again="1" type="button">계속 소환 (' + n + '회 · 루비 ' + (n === 10 ? PREM.c10 : PREM.c1) + ')</button><button class="btn" data-close="1" type="button">확인</button></div>',
     (e) => { if (e.target.closest('[data-again]')) { if (wallet.rubies < (n === 10 ? PREM.c10 : PREM.c1)) { toast('루비가 부족합니다.'); return; } premiumPull(n); } });
