@@ -1343,6 +1343,7 @@ function openSettings() {
     '<div class="setrow"><b>저장 상태</b><span class="note" style="margin:0">' + $('#acct span').textContent + '</span></div>' +
     '<div class="setrow"><b>저장 / 불러오기</b><span class="ctrl"><button class="btn" id="snow" type="button">지금 저장</button><button class="btn ghost" id="sload" type="button">계정 불러오기</button></span></div>' +
     (isDev ? '<div class="setrow"><b>개발자 도구</b><button class="btn" id="sdev" type="button">열기</button></div>' : '') +
+    (sbUser && sbUser.is_anonymous ? '<div class="setrow"><b>게스트 계정</b><button class="btn" id="slink" type="button">계정 연동</button></div><div class="note" style="margin:0">이메일을 연동하면 기기를 바꿔도, 브라우저 데이터를 지워도 이어서 할 수 있습니다.</div>' : '') +
     (sbUser ? '<div class="setrow"><b>' + (uname || '계정') + '</b><button class="btn danger" id="slogout" type="button">로그아웃</button></div>' : (sb ? '<div class="setrow"><b>로그인</b><button class="btn" id="slogin" type="button">로그인하기</button></div>' : '')) +
     '<div class="setrow"><b>타이틀 화면</b><button class="btn ghost" id="stitle" type="button">타이틀로</button></div>' +
     '<div class="ctrl"><button class="btn ghost" data-close="1" type="button">닫기</button></div>',
@@ -1352,6 +1353,7 @@ function openSettings() {
       else if (e.target.closest('#sload')) loadFromAccount();
       else if (e.target.closest('#sdev')) openDev();
       else if (e.target.closest('#slogout')) logout();
+      else if (e.target.closest('#slink')) openLink();
       else if (e.target.closest('#slogin')) openAuth();
       else if (e.target.closest('#stitle')) { closeModal(); toTitle(); }
     });
@@ -1440,7 +1442,7 @@ function makeDoc(uid) {
 }
 async function attachAccount(user) {
   sbUser = user; dbDoc = makeDoc(user.id);
-  try { const { data } = await sb.from('profiles').select('nickname,is_dev').eq('user_id', user.id).maybeSingle(); uname = (data && data.nickname) || (user.email || '').split('@')[0]; isDev = !!(data && data.is_dev); } catch (e) { uname = (user.email || '').split('@')[0]; isDev = false; }
+  try { const { data } = await sb.from('profiles').select('nickname,is_dev').eq('user_id', user.id).maybeSingle(); uname = (data && data.nickname) || (user.email || '').split('@')[0] || (user.is_anonymous ? '게스트' : ''); isDev = !!(data && data.is_dev); } catch (e) { uname = (user.email || '').split('@')[0] || '게스트'; isDev = false; }
   try {
     const snap = await dbDoc.get();
     if (snap.exists) {
@@ -1458,10 +1460,15 @@ function openAuth(msg) {
     '<input id="au-pw" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)" style="background:#0c111b;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:1rem">' +
     '<div id="au-msg" class="note" style="margin:0;color:var(--hp)">' + (msg || '') + '</div>' +
     '<div class="ctrl"><button class="btn big" data-au="in" type="button">로그인</button><button class="btn gem big" data-au="up" type="button">가입하기</button></div>' +
-    '<button class="btn ghost" data-au="guest" type="button">로그인 없이 플레이 (이 기기에만 저장)</button>',
+    '<button class="btn ghost" data-au="guest" type="button">게스트로 시작 (나중에 계정 연동 가능)</button>',
     async (e) => {
       const b = e.target.closest('[data-au]'); if (!b) return;
-      if (b.dataset.au === 'guest') { guest = true; closeModal(); startGame(); return; }
+      if (b.dataset.au === 'guest') {
+        const m0 = $('#au-msg'); m0.style.color = 'var(--dim)'; m0.textContent = '게스트 계정을 만드는 중...';
+        const r0 = sb ? await sb.auth.signInAnonymously() : { error: { message: 'no sb' } };
+        if (r0.error || !r0.data.session) { guest = true; closeModal(); startGame(); toast('게스트 계정을 만들 수 없어 이 기기에만 저장합니다.'); return; }
+        closeModal(); await attachAccount(r0.data.user); startGame(); return;
+      }
       const email = $('#au-email').value.trim(), password = $('#au-pw').value, m = $('#au-msg');
       if (!sb) { m.textContent = '서버에 연결할 수 없습니다.'; return; }
       if (!email || !password) { m.textContent = '이메일과 비밀번호를 입력하세요.'; return; }
@@ -1472,7 +1479,27 @@ function openAuth(msg) {
       closeModal(); await attachAccount(r.data.user); startGame();
     });
 }
+function openLink(msg) {
+  openModal('<h2>게스트 계정 연동</h2><div class="note" style="margin:0">지금까지의 진행 상황이 그대로 이 이메일 계정으로 이어집니다.</div>' +
+    '<input id="lk-email" type="email" autocomplete="email" placeholder="이메일" style="background:#0c111b;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:1rem">' +
+    '<input id="lk-pw" type="password" autocomplete="new-password" placeholder="비밀번호 (6자 이상)" style="background:#0c111b;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:1rem">' +
+    '<div id="lk-msg" class="note" style="margin:0;color:var(--hp)">' + (msg || '') + '</div>' +
+    '<div class="ctrl"><button class="btn big" data-lk="1" type="button">연동하기</button><button class="btn ghost" data-close="1" type="button">취소</button></div>',
+    async (e) => {
+      if (!e.target.closest('[data-lk]')) return;
+      const email = $('#lk-email').value.trim(), password = $('#lk-pw').value, m = $('#lk-msg');
+      if (!email || !password) { m.textContent = '이메일과 비밀번호를 입력하세요.'; return; }
+      m.style.color = 'var(--dim)'; m.textContent = '처리 중...';
+      const r = await sb.auth.updateUser({ email, password });
+      if (r.error) { m.style.color = 'var(--hp)'; m.textContent = authMsg(r.error.message); return; }
+      const u = r.data.user; sbUser = u; save(true);
+      if (u.is_anonymous || !u.email || (u.new_email && u.new_email !== u.email)) { m.style.color = 'var(--ok)'; m.textContent = '확인 메일을 보냈습니다. 메일의 링크를 누르면 연동이 끝납니다.'; return; }
+      uname = (u.email || '').split('@')[0]; renderAcct(); closeModal(); toast('계정 연동이 완료되었습니다.');
+    });
+}
+let confirmOut = false;
 async function logout() {
+  if (sbUser && sbUser.is_anonymous && !confirmOut) { confirmOut = true; toast('게스트는 로그아웃하면 복구할 수 없습니다. 한 번 더 누르면 로그아웃합니다.'); setTimeout(() => { confirmOut = false; }, 5000); return; }
   try { await sb.auth.signOut(); } catch (e) { /* 무시 */ }
   try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 무시 */ }
   location.reload();
